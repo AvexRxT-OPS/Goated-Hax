@@ -1,1 +1,7 @@
-slave
+local _={} _[1]=game:GetService("Players") _[2]=_[1].LocalPlayer _[3]=_[2].Character or _[2].CharacterAdded:Wait() _[4]=_[3]:WaitForChild("Humanoid") _[5]=game:GetService("UserInputService") _[6]=game:GetService("StarterGui")
+
+local function _(...) local _={...} local _=_[1] if _[4] then _[4].WalkSpeed=_ print("Speed set to ".._) local _=Instance.new("TextLabel") _.Size=UDim2.new(0,200,0,50) _.Position=UDim2.new(1,-210,1,-60) _.BackgroundColor3=Color3.new(0,0,0) _.BackgroundTransparency=0.5 _.Text="Speed: ".._ _.TextColor3=Color3.new(1,1,1) _.TextSize=24 _.Parent=_[2].PlayerGui wait(3) _:Destroy() else warn("Humanoid not found!") end end
+
+_[5].InputBegan:Connect(function(_,__) if __ then return end if _.UserInputType==Enum.UserInputType.Keyboard then if _.KeyCode==Enum.KeyCode.V then _(50) elseif _.KeyCode==Enum.KeyCode.B then _(100) elseif _.KeyCode==Enum.KeyCode.T then _(200) end end end)
+
+_[6]:SetCore("SendNotification",{Title="Avex Speed",Text="Loaded",Duration=5})
