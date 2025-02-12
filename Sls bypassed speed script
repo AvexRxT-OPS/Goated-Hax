@@ -1,66 +1,48 @@
-local a = game:GetService("Players")
-local b = a.LocalPlayer
-local c = b.Character or b.CharacterAdded:Wait()
-local d = c:WaitForChild("Humanoid")
-local e = game:GetService("UserInputService")
-local f = game:GetService("StarterGui")
+local P = game:GetService("Players")
+local p = P.LocalPlayer
+local c = p.Character or p.CharacterAdded:Wait()
+local h = c:WaitForChild("Humanoid")
+local UIS = game:GetService("UserInputService")
+local SG = game:GetService("StarterGui")
 
-local function g(h)
-    if d then
-        d.WalkSpeed = h
-        print("Speed set to " .. h)
+local function ChangeSpeed(s)
+    if h then
+        h.WalkSpeed = s
+        print("Speed set to " .. s)
 
-        local i = Instance.new("TextLabel")
-        i.Size = UDim2.new(0, 200, 0, 50)
-        i.Position = UDim2.new(1, -210, 1, -60)
-        i.BackgroundColor3 = Color3.new(0, 0, 0)
-        i.BackgroundTransparency = 0.5
-        i.Text = "Speed: " .. h
-        i.TextColor3 = Color3.new(1, 1, 1)
-        i.TextSize = 24
-        i.Parent = b.PlayerGui
+        local n = Instance.new("TextLabel")
+        n.Size = UDim2.new(0, 200, 0, 50)
+        n.Position = UDim2.new(1, -210, 1, -60)
+        n.BackgroundColor3 = Color3.new(0, 0, 0)
+        n.BackgroundTransparency = 0.5
+        n.Text = "Speed: " .. s
+        n.TextColor3 = Color3.new(1, 1, 1)
+        n.TextSize = 24
+        n.Parent = p.PlayerGui
 
         wait(3)
-        i:Destroy()
+        n:Destroy()
     else
         warn("Humanoid not found!")
     end
 end
 
-e.InputBegan:Connect(function(j, k)
-    if k then return end
+UIS.InputBegan:Connect(function(i, g)
+    if g then return end
 
-    if j.UserInputType == Enum.UserInputType.Keyboard then
-        if j.KeyCode == Enum.KeyCode.V then
-            g(50)
-        elseif j.KeyCode == Enum.KeyCode.B then
-            g(100)
-        elseif j.KeyCode == Enum.KeyCode.T then
-            g(200)
+    if i.UserInputType == Enum.UserInputType.Keyboard then
+        if i.KeyCode == Enum.KeyCode.V then
+            ChangeSpeed(50)
+        elseif i.KeyCode == Enum.KeyCode.B then
+            ChangeSpeed(100)
+        elseif i.KeyCode == Enum.KeyCode.T then
+            ChangeSpeed(200)
         end
     end
 end)
 
-f:SetCore("SendNotification", {
+SG:SetCore("SendNotification", {
     Title = "Avex Speed",
     Text = "Loaded",
     Duration = 5
 })
-
--- Redundant Code
-local function l()
-    local m = 10
-    local n = 20
-    local o = m + n
-    return o
-end
-
-local function p()
-    local q = "Obfuscation"
-    local r = "Complete"
-    local s = q .. " " .. r
-    print(s)
-end
-
-l()
-p()
