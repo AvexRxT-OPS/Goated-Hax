@@ -1,0 +1,141 @@
+-- Create the main frame
+local screenGui = Instance.new("ScreenGui")
+local mainFrame = Instance.new("Frame")
+local closeButton = Instance.new("TextButton")
+local speedButton = Instance.new("TextButton")
+local titleLabel = Instance.new("TextLabel")
+
+-- ScreenGui setup
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+screenGui.ResetOnSpawn = false -- Prevents the GUI from being destroyed on reset
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global -- Ensures the GUI stays on top of other GUIs
+screenGui.DisplayOrder = 1000 -- Force the ScreenGui to be at the top, override other GUI elements
+
+-- Main frame setup
+mainFrame.Name = "AvexHub"
+mainFrame.Parent = screenGui
+mainFrame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+mainFrame.BackgroundTransparency = 0.3
+mainFrame.BorderSizePixel = 0
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+mainFrame.Size = UDim2.new(0, 300, 0, 200)
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.ClipsDescendants = true
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.ZIndex = 1001 -- Make sure this frame is on top of other elements
+
+-- Rounded corners
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = mainFrame
+
+-- Close button setup
+closeButton.Name = "CloseButton"
+closeButton.Parent = mainFrame
+closeButton.BackgroundColor3 = Color3.new(0.8, 0.2, 0.2)
+closeButton.Position = UDim2.new(1, -30, 0, 10)
+closeButton.Size = UDim2.new(0, 20, 0, 20)
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.new(1, 1, 1)
+closeButton.Font = Enum.Font.SourceSansBold
+closeButton.TextSize = 14
+closeButton.BorderSizePixel = 0
+closeButton.ZIndex = 1002 -- Make sure the close button is on top
+
+-- Rounded corners for close button
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 10)
+closeCorner.Parent = closeButton
+
+-- Close button event
+closeButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+-- Speed button setup
+speedButton.Name = "SpeedButton"
+speedButton.Parent = mainFrame
+speedButton.BackgroundColor3 = Color3.new(0.2, 0.6, 0.2)
+speedButton.Position = UDim2.new(0.5, -75, 0.5, -20)
+speedButton.Size = UDim2.new(0, 150, 0, 40)
+speedButton.Text = "Speed Script"
+speedButton.TextColor3 = Color3.new(1, 1, 1)
+speedButton.Font = Enum.Font.SourceSansBold
+speedButton.TextSize = 18
+speedButton.BorderSizePixel = 0
+speedButton.ZIndex = 1002 -- Make sure the speed button is on top
+
+-- Rounded corners for speed button
+local speedCorner = Instance.new("UICorner")
+speedCorner.CornerRadius = UDim.new(0, 10)
+speedCorner.Parent = speedButton
+
+-- Speed button event
+speedButton.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/AvexRxT-OPS/Goated-Hax/main/Sls%20bypassed%20speed%20script", true))()
+end)
+
+-- Title label setup
+titleLabel.Name = "TitleLabel"
+titleLabel.Parent = mainFrame
+titleLabel.Text = "Avex Hub"
+titleLabel.TextColor3 = Color3.new(1, 1, 1)
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.TextSize = 24
+titleLabel.Position = UDim2.new(0.5, 0, 0, 10)
+titleLabel.AnchorPoint = Vector2.new(0.5, 0)
+titleLabel.Size = UDim2.new(0, 200, 0, 30)
+titleLabel.BackgroundTransparency = 1
+titleLabel.TextStrokeTransparency = 0.5
+titleLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+
+-- RGB text effect
+local runService = game:GetService("RunService")
+local time = 0
+
+runService.Heartbeat:Connect(function(delta)
+    time = time + delta
+    local r = math.sin(time * 2) * 0.5 + 0.5
+    local g = math.sin(time * 2 + 2) * 0.5 + 0.5
+    local b = math.sin(time * 2 + 4) * 0.5 + 0.5
+    titleLabel.TextColor3 = Color3.new(r, g, b)
+end)
+
+-- Draggable functionality
+local UserInputService = game:GetService("UserInputService")
+local dragging
+local dragInput
+local dragStart
+local startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+mainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
