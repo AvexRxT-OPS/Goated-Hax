@@ -1,0 +1,115 @@
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local expansionSize = 10
+local dragging = false
+
+local function createAndExpandPart(part, size, name)
+    local existingClone = part.Parent:FindFirstChild(name)
+    if existingClone then
+        existingClone:Destroy()
+    end
+
+    local clone = Instance.new("Part")
+    clone.Size = size
+    clone.CanCollide = false
+    clone.Transparency = 0.8
+    clone.Name = name
+    clone.Position = part.Position
+    clone.Anchored = false
+    clone.Parent = part.Parent
+
+    local originalAttachment = Instance.new("Attachment")
+    originalAttachment.Parent = part
+
+    local cloneAttachment = Instance.new("Attachment")
+    cloneAttachment.Parent = clone
+
+    local alignPosition = Instance.new("AlignPosition")
+    alignPosition.Attachment0 = cloneAttachment
+    alignPosition.Attachment1 = originalAttachment
+    alignPosition.RigidityEnabled = true
+    alignPosition.Parent = clone
+
+    local alignOrientation = Instance.new("AlignOrientation")
+    alignOrientation.Attachment0 = cloneAttachment
+    alignOrientation.Attachment1 = originalAttachment
+    alignOrientation.RigidityEnabled = true
+    alignOrientation.Parent = clone
+
+    return clone
+end
+
+local function onInputChanged(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        expansionSize = math.clamp(expansionSize + input.Delta.Y * 0.1, 1, 30)
+        createAndExpandPart(LocalPlayer.Character.UpperTorso, Vector3.new(expansionSize, expansionSize, expansionSize), "UpperTorso_Expanded")
+    end
+end
+
+local function onInputBegan(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+    end
+
+    if input.UserInputType == Enum.UserInputType.Keyboard then
+        local key = input.KeyCode
+        local sizeMap = {
+            [Enum.KeyCode.One] = 1,
+            [Enum.KeyCode.Two] = 2,
+            [Enum.KeyCode.Three] = 3,
+            [Enum.KeyCode.Four] = 4,
+            [Enum.KeyCode.Five] = 5,
+            [Enum.KeyCode.Six] = 6,
+            [Enum.KeyCode.Seven] = 7,
+            [Enum.KeyCode.Eight] = 8,
+            [Enum.KeyCode.Nine] = 9,
+            [Enum.KeyCode.Zero] = 10
+        }
+
+        if sizeMap[key] then
+            expansionSize = sizeMap[key]
+            createAndExpandPart(LocalPlayer.Character.UpperTorso, Vector3.new(expansionSize, expansionSize, expansionSize), "UpperTorso_Expanded")
+        end
+    end
+end
+
+local function onInputEnded(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end
+
+local function createGUI()
+    local screenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+    screenGui.Name = "ExpandPartsGui"
+
+    local frame = Instance.new("Frame", screenGui)
+    frame.Size = UDim2.new(0, 200, 0, 100)
+    frame.Position = UDim2.new(0, 10, 0, 10)
+    frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+
+    local slider = Instance.new("TextButton", frame)
+    slider.Size = UDim2.new(0, 180, 0, 30)
+    slider.Position = UDim2.new(0, 10, 0, 30)
+    slider.Text = "Expansion Size: " .. expansionSize
+
+    slider.MouseButton1Click:Connect(function()
+        expansionSize = math.clamp(expansionSize + 1, 1, 30)
+        slider.Text = "Expansion Size: " .. expansionSize
+        createAndExpandPart(LocalPlayer.Character.UpperTorso, Vector3.new(expansionSize, expansionSize, expansionSize), "UpperTorso_Expanded")
+    end)
+end
+
+UserInputService.InputBegan:Connect(onInputBegan)
+UserInputService.InputEnded:Connect(onInputEnded)
+UserInputService.InputChanged:Connect(onInputChanged)
+
+LocalPlayer.CharacterAdded:Connect(function()
+    createGUI()
+end)
+
+if LocalPlayer.Character then
+    createGUI()
+end
