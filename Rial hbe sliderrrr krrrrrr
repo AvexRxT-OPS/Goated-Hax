@@ -1,0 +1,153 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+
+local minSizeMultiplier = 0
+local maxSizeMultiplier = 2
+local currentSizeMultiplier = 0
+
+if UserInputService.TouchEnabled then
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 200, 0, 50)
+    frame.Position = UDim2.new(1, -210, 0, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    frame.BackgroundTransparency = 0.1
+    frame.BorderSizePixel = 0
+    frame.Parent = screenGui
+    local frameCorner = Instance.new("UICorner")
+    frameCorner.CornerRadius = UDim.new(0, 10)
+    frameCorner.Parent = frame
+
+    local sliderBar = Instance.new("Frame")
+    sliderBar.Size = UDim2.new(0, 160, 0, 6)
+    sliderBar.Position = UDim2.new(0, 20, 0.5, -3)
+    sliderBar.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    sliderBar.ZIndex = 1
+    sliderBar.Parent = frame
+    local barCorner = Instance.new("UICorner")
+    barCorner.CornerRadius = UDim.new(0, 3)
+    barCorner.Parent = sliderBar
+    local barGradient = Instance.new("UIGradient")
+    barGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 80, 80)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 150, 150))
+    })
+    barGradient.Parent = sliderBar
+
+    local slider = Instance.new("ImageButton")
+    slider.Size = UDim2.new(0, 25, 0, 25)
+    slider.Position = UDim2.new(0, 20, 0.5, -12.5)
+    slider.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    slider.ZIndex = 2
+    slider.BorderSizePixel = 0
+    slider.Parent = frame
+    local sliderCorner = Instance.new("UICorner")
+    sliderCorner.CornerRadius = UDim.new(0, 12.5)
+    sliderCorner.Parent = slider
+
+    local valueLabel = Instance.new("TextLabel")
+    valueLabel.Size = UDim2.new(1, 0, 0, 16)
+    valueLabel.Position = UDim2.new(0, 0, 0, -20)
+    valueLabel.BackgroundTransparency = 1
+    valueLabel.TextColor3 = Color3.new(1, 1, 1)
+    valueLabel.Text = "Size: 0%"
+    valueLabel.Font = Enum.Font.SourceSansBold
+    valueLabel.TextSize = 16
+    valueLabel.Parent = frame
+
+    local dragging = false
+
+    local function updateSlider(input)
+        local sliderBarAbsoluteX = sliderBar.AbsolutePosition.X
+        local sliderBarAbsoluteWidth = sliderBar.AbsoluteSize.X
+        local posX = math.clamp(input.Position.X - sliderBarAbsoluteX, 0, sliderBarAbsoluteWidth)
+        slider.Position = UDim2.new(0, posX, 0.5, -12.5)
+        currentSizeMultiplier = minSizeMultiplier + ((maxSizeMultiplier - minSizeMultiplier) * (posX / sliderBarAbsoluteWidth))
+        valueLabel.Text = "Size: " .. math.floor(currentSizeMultiplier * 100) .. "%"
+        local t = posX / sliderBarAbsoluteWidth
+        local r = math.clamp(255 * (1 - t * 2), 0, 255)
+        local g = math.clamp(255 * (t * 2 - 1), 0, 255)
+        local b = math.clamp(255 * (t - 0.5) * 2, 0, 255)
+        slider.BackgroundColor3 = Color3.fromRGB(r, g, b)
+        expandParts(currentSizeMultiplier)
+    end
+
+    slider.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+        end
+    end)
+
+    UserInputService.TouchMoved:Connect(function(input)
+        if dragging then
+            updateSlider(input)
+        end
+    end)
+
+    UserInputService.TouchEnded:Connect(function(input)
+        dragging = false
+    end)
+end
+
+local function createAndStabilizePart(part, size, name, transparency)
+    local existingClone = part.Parent:FindFirstChild(name)
+    if existingClone then
+        existingClone:Destroy()
+    end
+
+    local clone = Instance.new("Part")
+    clone.Size = size
+    clone.CanCollide = false
+    clone.Transparency = transparency
+    clone.Name = name
+    clone.Position = part.Position
+    clone.Anchored = false
+    clone.Parent = part.Parent
+
+    local originalAttachment = Instance.new("Attachment")
+    originalAttachment.Name = "OriginalAttachment"
+    originalAttachment.Parent = part
+
+    local cloneAttachment = Instance.new("Attachment")
+    cloneAttachment.Name = "CloneAttachment"
+    cloneAttachment.Parent = clone
+
+    local alignPosition = Instance.new("AlignPosition")
+    alignPosition.Attachment0 = cloneAttachment
+    alignPosition.Attachment1 = originalAttachment
+    alignPosition.RigidityEnabled = true
+    alignPosition.Parent = clone
+
+    local alignOrientation = Instance.new("AlignOrientation")
+    alignOrientation.Attachment0 = cloneAttachment
+    alignOrientation.Attachment1 = originalAttachment
+    alignOrientation.RigidityEnabled = true
+    alignOrientation.Parent = clone
+
+    return clone
+end
+
+function expandParts(sizeMultiplier)
+    local character = LocalPlayer.Character
+    if character then
+        local bodyParts = {
+            "LowerTorso", "UpperTorso", "HumanoidRootPart",
+            "Left Arm", "Right Arm", "Left Leg", "Right Leg",
+            "LeftHand", "RightHand", "LeftFoot", "RightFoot"
+        }
+
+        for _, partName in pairs(bodyParts) do
+            local part = character:FindFirstChild(partName)
+            if part then
+                part.Transparency = 1
+                local clone1 = createAndStabilizePart(part, Vector3.new(12, 12, 12) * sizeMultiplier, partName .. "_Expanded", 0.9)
+                local clone2 = createAndStabilizePart(clone1, Vector3.new(9, 9, 9) * sizeMultiplier, partName .. "_MidExpanded1", 0.9)
+                local clone3 = createAndStabilizePart(clone2, Vector3.new(6, 6, 6) * sizeMultiplier, partName .. "_HalfExpanded", 0.9)
+                createAndStabilizePart(clone3, Vector3.new(3, 3, 3) * sizeMultiplier, partName .. "_MidExpanded2", 0.9)
+            end
+        end
+    end
+end
